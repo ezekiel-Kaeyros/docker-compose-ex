@@ -1,0 +1,74 @@
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:14-alpine 
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=EU_backup
+    ports:
+      - "5432:5432"
+    volumes:
+      - /var/lib/postgresql/data:/var/lib/postgresql/data
+    networks:
+      - eu
+
+  migration:
+    container_name: migration
+    image: docker.io/harounrashid/migration_datase
+    depends_on:
+      - postgres
+    networks:
+      - eu  
+    env_file:
+      - ./.env
+    
+
+ 
+  backend:
+    container_name: backend
+    image: harounrashid/express-union_backend_prod
+    restart: always
+    privileged: true  
+    devices:
+      - "/dev/ttyUSB0:/dev/ttyUSB0"
+      - "/dev/ttyUSB1:/dev/ttyUSB1"
+      - "/dev/ttyUSB2:/dev/ttyUSB2"
+      - "/dev/ttyUSB3:/dev/ttyUSB3"
+      - "/dev/ttyUSB4:/dev/ttyUSB4"
+      - "/dev/ttyUSB5:/dev/ttyUSB5"
+      - "/dev/ttyUSB6:/dev/ttyUSB6"
+      - "/dev/ttyUSB7:/dev/ttyUSB7"
+      - "/dev/ttyUSB8:/dev/ttyUSB8"
+      - "/dev/ttyUSB9:/dev/ttyUSB9"
+    env_file:
+      - ./.env
+    depends_on:
+      - postgres
+      - migration  
+    ports:
+      - "8000:8000"
+    networks:
+      - eu
+ 
+  frontend:
+    container_name: frontend
+    image: harounrashid/express-union_frontend_prod
+    restart: always
+    depends_on:
+      - backend
+    privileged: true  
+    devices:
+      - "/dev/ttyUSB2:/dev/ttyUSB2"
+    
+    ports:
+      - "80:3000"
+    networks:
+      - eu
+ 
+volumes:
+  db:
+ 
+networks:
+  eu:
